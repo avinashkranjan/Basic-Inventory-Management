@@ -73,11 +73,7 @@ function Table() {
     console.log("Product to Update:", updateProductData);
 
     axios
-      // .put(`${BASE_URL}/api/inventory/product/${id}`, updateProductData)
-      .put(
-        `http://localhost:5000/api/inventory/product/${id}`,
-        updateProductData
-      )
+      .put(`${BASE_URL}/api/inventory/product/${id}`, updateProductData)
       .then((result) => {
         console.log(result);
         setRefresh(!refresh);
@@ -182,7 +178,7 @@ function Table() {
       if (result.isConfirmed) {
         setActionLoaded(true);
         axios
-          .delete(`http://localhost:5000/api/inventory/product/${id}`)
+          .delete(`${BASE_URL}/api/inventory/product/${id}`)
           .then((result) => {
             console.log(result);
             setRefresh(!refresh);
@@ -553,7 +549,7 @@ function Table() {
                             }),
                             setDialogType("edit"),
                           ]}
-                          className="flex focus:outline-none border-2 border-black p-3 bg- rounded mr-2 hover:bg-slate-200"
+                          className="flex focus:outline-none border-2 border-black p-3 rounded mr-2 hover:bg-slate-200"
                         >
                           <svg
                             xmlns="http://www.w3.org/2000/svg"
