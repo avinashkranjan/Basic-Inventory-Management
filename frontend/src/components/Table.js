@@ -27,7 +27,7 @@ function Table() {
     imageUrl: "",
   });
 
-  const BASE_URL = "http://65.2.38.252:5000";
+  const BASE_URL = "http://13.233.88.234:5000";
 
   AWS.config.update({
     region: "ap-south-1",
