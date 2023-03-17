@@ -31,7 +31,7 @@ connectDB();
 app.use(express.json());
 
 //Route Middlewares
-app.get("/", (res) => {
+app.get("/", (req, res) => {
   res.send("Assignment-2 Backend connected.");
 });
 app.use("/api/inventory", product);
