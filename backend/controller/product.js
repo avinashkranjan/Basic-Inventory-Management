@@ -50,41 +50,31 @@ router.post("/product", async (req, res) => {
 router.put("/product/:id", async (req, res) => {
   const { productName, quantity, imageUrl } = req.body;
 
-  Product.findByIdAndUpdate(
-    req.params.id,
-    {
-      productName,
-      quantity,
-      imageUrl,
-    },
-    (err, product) => {
-      if (err) {
-        console.log(err);
-        res
-          .status(500)
-          .send(
-            `An error occurred while updating the product with id ${req.params.id}.`
-          );
-      } else {
-        res.send("Product updated successfully.");
-      }
-    }
-  );
+  console.log(req.body);
+
+  Product.findByIdAndUpdate(req.params.id, {
+    productName,
+    quantity,
+    imageUrl,
+  })
+    .then((product) => {
+      res.status(200).send(product);
+    })
+    .catch((err) => {
+      console.log(err);
+      res.status(500).send("An error occurred while updating the product.");
+    });
 });
 
 router.delete("/product/:id", async (req, res) => {
-  Product.findByIdAndDelete(req.params.id, (err) => {
-    if (err) {
+  Product.findByIdAndDelete(req.params.id)
+    .then((product) => {
+      res.status(200).send(product);
+    })
+    .catch((err) => {
       console.log(err);
-      res
-        .status(500)
-        .send(
-          `An error occurred while deleting the product with id ${req.params.id}.`
-        );
-    } else {
-      res.send("Product deleted successfully.");
-    }
-  });
+      res.status(500).send("An error occurred while deleting the product.");
+    });
 });
 
 module.exports = router;

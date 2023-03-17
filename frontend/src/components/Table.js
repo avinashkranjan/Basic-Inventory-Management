@@ -1,15 +1,15 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import AWS from "aws-sdk";
+import Swal from "sweetalert2";
 
 function Table() {
   const [productData, setProductData] = useState([]);
-  const [productEdit, setProductEdit] = useState();
   const [show, setShow] = useState(false);
   const [dialogType, setDialogType] = useState("add");
   const [refresh, setRefresh] = useState(false);
   const [isLoaded, setIsLoaded] = useState(false);
-  const [actionLoaded, setActionLoaded] = useState(true);
+  const [actionLoaded, setActionLoaded] = useState(false);
 
   const [productName, setProductName] = useState("");
   const [quantity, setQuantity] = useState(null);
@@ -19,6 +19,15 @@ function Table() {
   const [errProductName, setErrProductName] = useState("");
   const [errQuantity, setErrQuantity] = useState("");
   const [errImage, setErrImage] = useState("");
+
+  const [formValues, setFormValues] = useState({
+    productId: "",
+    productName: "",
+    quantity: null,
+    imageUrl: "",
+  });
+
+  const BASE_URL = "http://65.2.38.252:5000";
 
   AWS.config.update({
     region: "ap-south-1",
@@ -33,7 +42,7 @@ function Table() {
   useEffect(() => {
     setIsLoaded(true);
     axios
-      .get("http://localhost:5000/api/inventory/product")
+      .get(`${BASE_URL}/api/inventory/product`)
       .then((res) => {
         console.log(res.data);
         setProductData(res.data);
@@ -44,14 +53,41 @@ function Table() {
       });
   }, [refresh]);
 
+  const handleInputChange = (event) => {
+    const { id, value } = event.target;
+    console.log(id, value);
+    setFormValues({
+      ...formValues,
+      [id]: id === "quantity" ? parseInt(value) : value,
+    });
+  };
+
   const updateProduct = async (id) => {
-    setActionLoaded(true);
-    console.log(id);
-    await axios
-      .put(`http://localhost:5000/api/inventory/product/${id}`)
-      .then((res) => {
-        console.log(res.data);
+    // setActionLoaded(true);
+
+    const updateProductData = {
+      productName: formValues.productName,
+      quantity: formValues.quantity,
+    };
+
+    console.log("Product to Update:", updateProductData);
+
+    axios
+      // .put(`${BASE_URL}/api/inventory/product/${id}`, updateProductData)
+      .put(
+        `http://localhost:5000/api/inventory/product/${id}`,
+        updateProductData
+      )
+      .then((result) => {
+        console.log(result);
         setRefresh(!refresh);
+        setProductName("");
+        setQuantity(null);
+        setImage("");
+        setShow(false);
+        setErrProductName("");
+        setErrQuantity("");
+        setErrImage("");
         setActionLoaded(false);
       })
       .catch((err) => {
@@ -114,7 +150,7 @@ function Table() {
     console.log("Product to Add:", addProductData);
 
     axios
-      .post("http://localhost:5000/api/inventory/product", addProductData)
+      .post(`${BASE_URL}/api/inventory/product`, addProductData)
       .then((result) => {
         console.log(result);
         setRefresh(!refresh);
@@ -131,6 +167,35 @@ function Table() {
       .catch((err) => {
         console.log(err);
       });
+  };
+
+  const deleteProduct = async (id) => {
+    Swal.fire({
+      title: "Are you sure?",
+      text: "You won't be able to revert this!",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#3085d6",
+      cancelButtonColor: "#d33",
+      confirmButtonText: "Yes, delete it!",
+    }).then((result) => {
+      if (result.isConfirmed) {
+        setActionLoaded(true);
+        axios
+          .delete(`http://localhost:5000/api/inventory/product/${id}`)
+          .then((result) => {
+            console.log(result);
+            setRefresh(!refresh);
+            setActionLoaded(false);
+            Swal.fire("Deleted!", "Your file has been deleted.", "success");
+          })
+          .catch((err) => {
+            console.log(err);
+          });
+      } else {
+        setActionLoaded(false);
+      }
+    });
   };
 
   return (
@@ -296,7 +361,7 @@ function Table() {
                 <div className="relative transform overflow-hidden rounded-lg bg-white text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-lg">
                   <div className="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
                     <div className="sm:flex sm:items-start">
-                      <div className="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left">
+                      <div className="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left w-full">
                         <h3
                           className="text-lg leading-6 font-medium text-gray-900 my-3"
                           id="modal-title"
@@ -304,44 +369,30 @@ function Table() {
                           Update Product
                         </h3>
                         <div className="mt-2">
-                          <div className="mb-4">
-                            <label
-                              className="block text-gray-700 text-sm font-bold mb-2"
-                              htmlFor="productName"
-                            >
-                              Product Image
-                            </label>
-                            <div className="flex">
-                              <img
-                                src={productEdit.imageUrl}
-                                className="w-20 h-20 mr-4 border-2 border-black rounded"
-                                alt="product"
-                              />
+                          <div className="mb-4 flex">
+                            <img
+                              src={formValues.imageUrl}
+                              className="w-20 h-20 mr-4 border-2 border-black rounded"
+                              alt="product"
+                            />
+                            <div className="w-[90%]">
+                              <label
+                                className="block text-gray-700 text-sm font-bold mb-2"
+                                htmlFor="productName"
+                              >
+                                Product Name
+                              </label>
                               <input
-                                className="shadow h-10 mt-4 appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                                className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
                                 id="productName"
-                                type="file"
-                                accept="image/png, image/jpeg, image/jpg"
-                                placeholder="Product Image"
+                                defaultValue={formValues.productName}
+                                onChange={(e) => handleInputChange(e)}
+                                type="text"
+                                placeholder="Product Name"
                               />
                             </div>
                           </div>
 
-                          <div className="mb-4">
-                            <label
-                              className="block text-gray-700 text-sm font-bold mb-2"
-                              htmlFor="productName"
-                            >
-                              Product Name
-                            </label>
-                            <input
-                              className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                              id="productName"
-                              value={productEdit.productName}
-                              type="text"
-                              placeholder="Product Name"
-                            />
-                          </div>
                           <div className="mb-4">
                             <label
                               className="block text-gray-700 text-sm font-bold mb-2"
@@ -352,8 +403,9 @@ function Table() {
                             <input
                               className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
                               id="quantity"
-                              value={productEdit.quantity}
-                              type="text"
+                              defaultValue={formValues.quantity}
+                              onChange={(e) => handleInputChange(e)}
+                              type="number"
                               placeholder="Quantity"
                             />
                           </div>
@@ -363,11 +415,28 @@ function Table() {
                   </div>
                   <div className="bg-gray-50 px-4 py-3 sm:flex sm:flex-row-reverse sm:px-6">
                     <button
-                      onClick={() => updateProduct(productEdit._id)}
+                      onClick={
+                        actionLoaded
+                          ? () => console.log("Loading...")
+                          : () => updateProduct(formValues.productId)
+                      }
                       type="button"
                       className="inline-flex w-full justify-center rounded-md bg-red-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-red-500 sm:ml-3 sm:w-auto"
                     >
-                      Update
+                      {actionLoaded ? (
+                        <div className="flex items-center justify-center">
+                          <div
+                            className="inline-block h-6 w-6 animate-spin rounded-full border-4 border-solid border-current border-r-transparent align-[-0.125em] motion-reduce:animate-[spin_1.5s_linear_infinite]"
+                            role="status"
+                          >
+                            <span className="!absolute !-m-px !h-px !w-px !overflow-hidden !whitespace-nowrap !border-0 !p-0 ![clip:rect(0,0,0,0)]">
+                              Loading...
+                            </span>
+                          </div>
+                        </div>
+                      ) : (
+                        "Update"
+                      )}
                     </button>
                     <button
                       onClick={() => setShow(false)}
@@ -472,11 +541,16 @@ function Table() {
                         </p>
                       </td>
 
-                      <td className="px-7 2xl:px-0 mt-4">
+                      <td className="px-7 2xl:px-0 mt-4 flex">
                         <button
                           onClick={() => [
                             setShow(true),
-                            setProductEdit(product),
+                            setFormValues({
+                              productId: product._id,
+                              productName: product.productName,
+                              quantity: product.quantity,
+                              imageUrl: product.imageUrl,
+                            }),
                             setDialogType("edit"),
                           ]}
                           className="flex focus:outline-none border-2 border-black p-3 bg- rounded mr-2 hover:bg-slate-200"
@@ -496,6 +570,26 @@ function Table() {
                             />
                           </svg>
                           Update
+                        </button>
+                        <button
+                          onClick={() => deleteProduct(product._id)}
+                          className="flex focus:outline-none border-2 border-red-500 text-red-500 p-3 bg- rounded mr-2 hover:bg-slate-200"
+                        >
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            strokeWidth={1.5}
+                            stroke="currentColor"
+                            className="w-4 h-4 mr-2"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0"
+                            />
+                          </svg>
+                          Delete
                         </button>
                       </td>
                     </tr>
