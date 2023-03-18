@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import axios from "axios";
 import AWS from "aws-sdk";
 import Swal from "sweetalert2";
+import Table_3rdAPI from "./Table_3rdAPI";
 
 function Table() {
   const [productData, setProductData] = useState([]);
@@ -19,6 +20,8 @@ function Table() {
   const [errProductName, setErrProductName] = useState("");
   const [errQuantity, setErrQuantity] = useState("");
   const [errImage, setErrImage] = useState("");
+
+  const [tableType, setTableType] = useState("Inventory");
 
   const [formValues, setFormValues] = useState({
     productId: "",
@@ -479,6 +482,60 @@ function Table() {
           </div>
         </div>
         <div className="bg-white shadow px-4 md:px-10 pt-4 md:pt-7 pb-5 overflow-y-auto">
+          <div className="border-b border-gray-200 dark:border-gray-700">
+            <ul className="flex flex-wrap -mb-px text-sm font-medium text-center text-gray-500 dark:text-gray-400">
+              <li className="mr-2" onClick={() => setTableType("3rdParty")}>
+                <a
+                  href="#!"
+                  className={`${
+                    tableType === "3rdParty"
+                      ? "text-blue-600 border-b-2 border-blue-600"
+                      : "text-gray-400"
+                  } inline-flex p-4 0 rounded-t-lg  group`}
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 0 24 24"
+                    fill="currentColor"
+                    className={`${
+                      tableType === "3rdParty"
+                        ? "text-blue-600"
+                        : "text-gray-400"
+                    } w-5 h-5 mr-2`}
+                  >
+                    <path d="M12.378 1.602a.75.75 0 00-.756 0L3 6.632l9 5.25 9-5.25-8.622-5.03zM21.75 7.93l-9 5.25v9l8.628-5.032a.75.75 0 00.372-.648V7.93zM11.25 22.18v-9l-9-5.25v8.57a.75.75 0 00.372.648l8.628 5.033z" />
+                  </svg>
+                  3rd Party API
+                </a>
+              </li>
+              <li className="mr-2" onClick={() => setTableType("Inventory")}>
+                <a
+                  href="#!"
+                  className={`${
+                    tableType === "Inventory"
+                      ? "text-blue-600 border-b-2 border-blue-600"
+                      : "text-gray-400"
+                  } inline-flex p-4 0 rounded-t-lg  group`}
+                  aria-current="page"
+                >
+                  <svg
+                    aria-hidden="true"
+                    className={`${
+                      tableType === "Inventory"
+                        ? "text-blue-600"
+                        : "text-gray-400"
+                    } w-5 h-5 mr-2`}
+                    fill="currentColor"
+                    viewBox="0 0 20 20"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <path d="M5 3a2 2 0 00-2 2v2a2 2 0 002 2h2a2 2 0 002-2V5a2 2 0 00-2-2H5zM5 11a2 2 0 00-2 2v2a2 2 0 002 2h2a2 2 0 002-2v-2a2 2 0 00-2-2H5zM11 5a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V5zM11 13a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"></path>
+                  </svg>
+                  Inventory
+                </a>
+              </li>
+            </ul>
+          </div>
           {isLoaded ? (
             <div className="flex items-center justify-center">
               <div
@@ -496,6 +553,9 @@ function Table() {
                 No Products Found
               </p>
             </div>
+          ) : tableType === "3rdParty" ? (
+            // eslint-disable-next-line react/jsx-pascal-case
+            <Table_3rdAPI />
           ) : (
             <table className="w-full whitespace-nowrap">
               <thead>
